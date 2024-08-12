@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Driver {
+  DriverID    String                    @id @default(uuid())
+  Name        String
+  Email       String
+  Phone       String
+  Assignments VehicleDriverAssignment[]
+}
+
+model Vehicle {
+  VehicleID   String                    @id @default(uuid())
+  Company     String
+  Model       String
+  LicenseNo   String
+  Assignments VehicleDriverAssignment[]
+}
+
+model VehicleDriverAssignment {
+  AssignmentID String  @id @default(uuid())
+  IsAssigned   Boolean @default(false)
+  DriverID     String
+  Driver       Driver  @relation(fields: [DriverID], references: [DriverID])
+  VehicleID    String
+  Vehicle      Vehicle @relation(fields: [VehicleID], references: [VehicleID])
+
+  @@unique([DriverID, IsAssigned], name: "unique_active_driver_assignment")
+  @@unique([VehicleID, IsAssigned], name: "unique_active_vehicle_assignment")
+}
