@@ -46,25 +46,25 @@ export async function assignDriver(data: AssignDriverInput): Promise<{
                 };
             }
 
-            const conflictingVehicleAssignment =
-                await prisma.vehicleDriverAssignment.findFirst({
-                    where: {
-                        VehicleID: data.VehicleID,
-                        StartTime: {
-                            lte: data.EndTime,
-                        },
-                        EndTime: {
-                            gte: data.StartTime,
-                        },
-                    },
-                });
+            // const conflictingVehicleAssignment =
+            //     await prisma.vehicleDriverAssignment.findFirst({
+            //         where: {
+            //             VehicleID: data.VehicleID,
+            //             StartTime: {
+            //                 lte: data.EndTime,
+            //             },
+            //             EndTime: {
+            //                 gte: data.StartTime,
+            //             },
+            //         },
+            //     });
 
-            if (conflictingVehicleAssignment) {
-                return {
-                    success: false,
-                    message: `Vehicle ${data.VehicleID} is already assigned to another driver within the selected timeframe.`,
-                };
-            }
+            // if (conflictingVehicleAssignment) {
+            //     return {
+            //         success: false,
+            //         message: `Vehicle ${data.VehicleID} is already assigned to another driver within the selected timeframe.`,
+            //     };
+            // }
 
             const driver = await prisma.driver.findUnique({
                 where: {

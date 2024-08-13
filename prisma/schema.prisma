@@ -39,9 +39,9 @@ model VehicleDriverAssignment {
   StartTime         DateTime
   EndTime           DateTime
   AssignmentRequest AssignmentRequest[]
+  // @@unique([VehicleID, StartTime, EndTime], name: "unique_vehicle_assignment_timeframe")
 
   @@unique([DriverID, StartTime, EndTime], name: "unique_driver_assignment_timeframe")
-  @@unique([VehicleID, StartTime, EndTime], name: "unique_vehicle_assignment_timeframe")
 }
 
 model AssignmentRequest {

@@ -218,7 +218,7 @@ export default function DriverSearch({ drivers, vehicleId }: Props) {
                                         onChange={() =>
                                             handleDriverSelect(driver.DriverID)
                                         }
-                                        className="mr-2 cursor-pointer"
+                                        className="mr-2 cur"
                                     />
                                     <div className="flex flex-row justify-around w-full border rounded-lg  my-3 py-2">
                                         <span>{driver.Name}</span>
