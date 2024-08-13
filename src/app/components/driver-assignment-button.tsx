@@ -11,11 +11,15 @@ interface DriverAssignmentButtonProps {
         Phone: string;
     };
     vehicleId: string;
+    startTime: string;
+    endTime: string;
 }
 
 const DriverAssignmentButton: React.FC<DriverAssignmentButtonProps> = ({
     driver,
     vehicleId,
+    startTime,
+    endTime,
 }) => {
     const { toast } = useToast();
 
@@ -24,15 +28,22 @@ const DriverAssignmentButton: React.FC<DriverAssignmentButtonProps> = ({
             const result = await assignDriver({
                 DriverID: driver.DriverID,
                 VehicleID: vehicleId,
+                StartTime: new Date(startTime),
+                EndTime: new Date(endTime),
             });
 
             if (result.success) {
                 toast({
                     title: "Driver Assigned",
-                    description: `${driver.Name} has been assigned to the vehicle.`,
+                    description: `${driver.Name} has been assigned to the vehicle from ${startTime} to ${endTime}.`,
                 });
             } else {
-                throw new Error("Failed to assign driver");
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description:
+                        result.message || "Failed to assign driver to vehicle.",
+                });
             }
         } catch (error) {
             toast({

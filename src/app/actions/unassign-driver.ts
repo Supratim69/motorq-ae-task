@@ -1,6 +1,6 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, RequestStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ export async function unassignDriver(
         where: {
             DriverID: data.DriverID,
             VehicleID: data.VehicleID,
-            IsAssigned: true,
+            Status: RequestStatus.ACCEPTED,
         },
     });
 
@@ -26,12 +26,13 @@ export async function unassignDriver(
             message: "Assignment not found or already unassigned.",
         };
     }
+
     await prisma.vehicleDriverAssignment.update({
         where: {
             AssignmentID: assignment.AssignmentID,
         },
         data: {
-            IsAssigned: false,
+            Status: RequestStatus.REJECTED,
         },
     });
 

@@ -15,7 +15,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, RequestStatus } from "@prisma/client";
 import DriverForm from "./components/driver-form";
 import DriverSearch from "./components/driver-search";
 import UnassignDriverButton from "./components/unassign-driver-button";
@@ -29,11 +29,8 @@ export default async function Home() {
             LicenseNo: true,
             Model: true,
             Assignments: {
-                where: {
-                    IsAssigned: true,
-                },
                 select: {
-                    IsAssigned: true,
+                    Status: true,
                     Driver: {
                         select: {
                             DriverID: true,
@@ -87,81 +84,93 @@ export default async function Home() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {vehicles.map((vehicle) => (
-                            <TableRow key={vehicle.LicenseNo}>
-                                <TableCell className="font-medium">
-                                    {vehicle.LicenseNo}
-                                </TableCell>
-                                <TableCell>{vehicle.Model}</TableCell>
-                                <TableCell>
-                                    {vehicle.Assignments.length > 0 &&
-                                    vehicle.Assignments[0].IsAssigned
-                                        ? "Assigned"
-                                        : "Unassigned"}
-                                </TableCell>
-                                <TableCell>
-                                    <Dialog>
-                                        <DialogTrigger
-                                            className={`px-3 rounded-lg w-[35%] py-2 text-white ${
-                                                vehicle.Assignments.length >
-                                                    0 &&
-                                                vehicle.Assignments[0]
-                                                    .IsAssigned
-                                                    ? "bg-red-500"
-                                                    : "bg-green-500"
-                                            }`}
-                                        >
-                                            {vehicle.Assignments.length > 0 &&
-                                            vehicle.Assignments[0].IsAssigned
-                                                ? "Unassign"
-                                                : "Assign"}
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            {vehicle.Assignments.length > 0 &&
-                                            vehicle.Assignments[0]
-                                                .IsAssigned ? (
-                                                <div>
-                                                    <span className="text-lg">
-                                                        Are you sure you want to
-                                                        unassign the driver?
-                                                    </span>
-                                                    <div className="flex flex-row justify-evenly mt-2">
-                                                        <UnassignDriverButton
-                                                            driverId={
-                                                                vehicle
-                                                                    .Assignments[0]
-                                                                    .Driver
-                                                                    .DriverID
-                                                            }
+                        {vehicles.map((vehicle) => {
+                            const assignmentStatus =
+                                vehicle.Assignments.length > 0
+                                    ? vehicle.Assignments[0].Status
+                                    : null;
+
+                            let statusText = "Unassigned";
+                            let buttonText = "Assign";
+                            let buttonColor = "bg-green-500";
+
+                            if (assignmentStatus === RequestStatus.ACCEPTED) {
+                                statusText = "Assigned";
+                                buttonText = "Unassign";
+                                buttonColor = "bg-red-500";
+                            } else if (
+                                assignmentStatus === RequestStatus.PENDING
+                            ) {
+                                statusText = "Pending";
+                                buttonText = "Pending...";
+                                buttonColor = "bg-yellow-500";
+                            }
+
+                            return (
+                                <TableRow key={vehicle.LicenseNo}>
+                                    <TableCell className="font-medium">
+                                        {vehicle.LicenseNo}
+                                    </TableCell>
+                                    <TableCell>{vehicle.Model}</TableCell>
+                                    <TableCell>{statusText}</TableCell>
+                                    <TableCell>
+                                        <Dialog>
+                                            <DialogTrigger
+                                                className={`px-3 rounded-lg w-[35%] py-2 text-white ${buttonColor}`}
+                                                disabled={
+                                                    assignmentStatus ===
+                                                    RequestStatus.PENDING
+                                                }
+                                            >
+                                                {buttonText}
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                                {assignmentStatus ===
+                                                RequestStatus.ACCEPTED ? (
+                                                    <div>
+                                                        <span className="text-lg">
+                                                            Are you sure you
+                                                            want to unassign the
+                                                            driver?
+                                                        </span>
+                                                        <div className="flex flex-row justify-evenly mt-2">
+                                                            <UnassignDriverButton
+                                                                driverId={
+                                                                    vehicle
+                                                                        .Assignments[0]
+                                                                        .Driver
+                                                                        .DriverID
+                                                                }
+                                                                vehicleId={
+                                                                    vehicle.VehicleID
+                                                                }
+                                                            />
+                                                            <button className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                                                                No
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <DialogHeader className="mb-2">
+                                                            <DialogTitle>
+                                                                Assign Driver.
+                                                            </DialogTitle>
+                                                        </DialogHeader>
+                                                        <DriverSearch
+                                                            drivers={drivers}
                                                             vehicleId={
                                                                 vehicle.VehicleID
                                                             }
                                                         />
-                                                        <button className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors">
-                                                            No
-                                                        </button>
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    <DialogHeader className="mb-2">
-                                                        <DialogTitle>
-                                                            Assign Driver.
-                                                        </DialogTitle>
-                                                    </DialogHeader>
-                                                    <DriverSearch
-                                                        drivers={drivers}
-                                                        vehicleId={
-                                                            vehicle.VehicleID
-                                                        }
-                                                    />
-                                                </div>
-                                            )}
-                                        </DialogContent>
-                                    </Dialog>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                                )}
+                                            </DialogContent>
+                                        </Dialog>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </div>
