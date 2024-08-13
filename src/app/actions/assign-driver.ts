@@ -5,6 +5,7 @@ import {
     VehicleDriverAssignment,
     RequestStatus,
 } from "@prisma/client";
+import calculateDistance from "@/utils/distance";
 
 const prisma = new PrismaClient();
 
@@ -13,6 +14,8 @@ interface AssignDriverInput {
     VehicleID: string;
     StartTime: Date;
     EndTime: Date;
+    Latitude: number;
+    Longitude: number;
 }
 
 export async function assignDriver(data: AssignDriverInput): Promise<{
@@ -21,7 +24,7 @@ export async function assignDriver(data: AssignDriverInput): Promise<{
     message?: string;
 }> {
     try {
-        // Checking for existing assignments for the driver within the same timeframe
+        // Step 1: Checking for existing assignments for the driver within the same timeframe
         const conflictingDriverAssignment =
             await prisma.vehicleDriverAssignment.findFirst({
                 where: {
@@ -43,7 +46,7 @@ export async function assignDriver(data: AssignDriverInput): Promise<{
             };
         }
 
-        // Checking for existing assignments for the vehicle within the same timeframe
+        // Step 2: Checking for existing assignments for the vehicle within the same timeframe
         const conflictingVehicleAssignment =
             await prisma.vehicleDriverAssignment.findFirst({
                 where: {
@@ -65,7 +68,42 @@ export async function assignDriver(data: AssignDriverInput): Promise<{
             };
         }
 
-        // If no conflicts, create the assignment and the request in a transaction
+        // Step 3: Verify that the driver is within the required distance (e.g., 10 km radius)
+        const driver = await prisma.driver.findUnique({
+            where: {
+                DriverID: data.DriverID,
+            },
+            select: {
+                Latitude: true,
+                Longitude: true,
+            },
+        });
+
+        if (!driver) {
+            return {
+                success: false,
+                message: "Driver not found.",
+            };
+        }
+
+        const distance = calculateDistance(
+            data.Latitude,
+            data.Longitude,
+            driver.Latitude!,
+            driver.Longitude!
+        );
+
+        const radiusLimit = 10; // radius in kilometers
+
+        if (distance > radiusLimit) {
+            return {
+                success: false,
+                message:
+                    "Driver is outside the acceptable radius for assignment.",
+            };
+        }
+
+        // Step 4: If no conflicts, create the assignment and the request in a transaction
         return await prisma.$transaction(async (prisma) => {
             // Create the VehicleDriverAssignment with status PENDING
             const assignment = await prisma.vehicleDriverAssignment.create({

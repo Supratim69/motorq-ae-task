@@ -3,12 +3,13 @@
 import React from "react";
 import { assignDriver } from "@/app/actions/assign-driver";
 import { useToast } from "@/components/ui/use-toast";
-
 interface DriverAssignmentButtonProps {
     driver: {
         DriverID: string;
         Name: string;
         Phone: string;
+        Latitude: number;
+        Longitude: number;
     };
     vehicleId: string;
     startTime: string;
@@ -30,6 +31,8 @@ const DriverAssignmentButton: React.FC<DriverAssignmentButtonProps> = ({
                 VehicleID: vehicleId,
                 StartTime: new Date(startTime),
                 EndTime: new Date(endTime),
+                Latitude: driver.Latitude,
+                Longitude: driver.Longitude,
             });
 
             if (result.success) {
@@ -62,6 +65,7 @@ const DriverAssignmentButton: React.FC<DriverAssignmentButtonProps> = ({
         >
             <span>{driver.Name}</span>
             <span>{driver.Phone}</span>
+            <span className="text-green-500">Available</span>
         </button>
     );
 };

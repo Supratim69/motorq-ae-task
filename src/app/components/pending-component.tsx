@@ -9,7 +9,7 @@ interface PendingComponentProps {
     licenseNo: string;
     startTime: string;
     endTime: string;
-    onStatusChange?: () => void; // Callback to refresh the list after accepting or rejecting
+    onStatusChange?: () => void;
 }
 
 export default function PendingComponent({
