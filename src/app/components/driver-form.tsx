@@ -1,50 +1,39 @@
 "use client";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
 import { createDriver } from "@/app/actions/create-driver";
 import { useToast } from "@/components/ui/use-toast";
+import MapWithPlacePicker from "@/app/components/MapWithPlacePicker";
 
-export default function DriverForm() {
+interface DriverFormProps {
+    onSuccess?: () => void;
+}
+
+export default function DriverForm({ onSuccess }: DriverFormProps) {
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
-    const [errors, setErrors] = useState({ name: "", phone: "", email: "" });
+    const [location, setLocation] = useState<{
+        latitude: number;
+        longitude: number;
+        address: string;
+    } | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
-
-    const validateForm = () => {
-        let isValid = true;
-        const newErrors = { name: "", phone: "", email: "" };
-
-        if (!name.trim()) {
-            newErrors.name = "Name is required";
-            isValid = false;
-        }
-        if (!phone.trim()) {
-            newErrors.phone = "Phone is required";
-            isValid = false;
-        } else if (!/^\d{10,}$/.test(phone)) {
-            newErrors.phone = "Phone number must have at least 10 digits";
-            isValid = false;
-        }
-        if (!email.trim()) {
-            newErrors.email = "Email is required";
-            isValid = false;
-        }
-
-        setErrors(newErrors);
-        return isValid;
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        setIsSubmitting(true);
 
         try {
             const result = await createDriver({
-                Name: name,
-                Phone: phone,
-                Email: email,
+                Name: name.trim(),
+                Phone: phone.trim(),
+                Email: email.trim(),
+                LocationName: location!.address.trim(),
+                Latitude: location!.latitude,
+                Longitude: location!.longitude,
             });
             if (result.success) {
                 toast({
@@ -54,15 +43,20 @@ export default function DriverForm() {
                 setName("");
                 setPhone("");
                 setEmail("");
-                setErrors({ name: "", phone: "", email: "" });
+                setLocation(null);
+                if (onSuccess) onSuccess();
             }
         } catch (error) {
             toast({
                 className: "bg-red-500 text-white",
                 description: "An error occurred while creating driver.",
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
+    const isFormValid = name && phone && email && location;
 
     return (
         <form onSubmit={handleSubmit}>
@@ -76,10 +70,8 @@ export default function DriverForm() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter Driver's Name..."
+                    required
                 />
-                {errors.name && (
-                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                )}
             </div>
             <div className="my-3">
                 <label htmlFor="phone" className="text-lg mx-1">
@@ -91,10 +83,10 @@ export default function DriverForm() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Enter Driver's Phone..."
+                    required
+                    pattern="^\d{10,}$"
+                    title="Phone number must have at least 10 digits"
                 />
-                {errors.phone && (
-                    <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-                )}
             </div>
             <div className="my-3">
                 <label htmlFor="email" className="text-lg mx-1">
@@ -106,12 +98,23 @@ export default function DriverForm() {
                     value={email}
                     placeholder="Enter Driver's Email..."
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                 />
-                {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            </div>
+            <div className="my-3">
+                <label htmlFor="location" className="text-lg mx-1">
+                    Location
+                </label>
+                <MapWithPlacePicker onLocationSelect={setLocation} />
+                {location && (
+                    <p className="text-green-500 text-sm mt-1">
+                        Location selected: {location.address}
+                    </p>
                 )}
             </div>
-            <Button type="submit">Create</Button>
+            <Button type="submit" disabled={isSubmitting || !isFormValid}>
+                {isSubmitting ? "Creating..." : "Create"}
+            </Button>
         </form>
     );
 }

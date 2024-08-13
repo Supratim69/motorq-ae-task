@@ -8,6 +8,9 @@ interface DriverInput {
     Name: string;
     Phone: string;
     Email: string;
+    LocationName: string;
+    Latitude: number;
+    Longitude: number;
 }
 
 export async function createDriver(
@@ -18,6 +21,9 @@ export async function createDriver(
             Name: data.Name,
             Phone: data.Phone,
             Email: data.Email,
+            LocationName: data.LocationName,
+            Latitude: data.Latitude,
+            Longitude: data.Longitude,
         },
     });
 

@@ -8,12 +8,15 @@ datasource db {
 }
 
 model Driver {
-  DriverID    String                    @id @default(uuid())
-  Name        String
-  Email       String
-  Phone       String
-  Assignments VehicleDriverAssignment[]
-  Requests    AssignmentRequest[]
+  DriverID     String                    @id @default(uuid())
+  Name         String
+  Email        String
+  Phone        String
+  LocationName String
+  Latitude     Float
+  Longitude    Float
+  Assignments  VehicleDriverAssignment[]
+  Requests     AssignmentRequest[]
 }
 
 model Vehicle {

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { PrismaClient, RequestStatus } from "@prisma/client";
-import DriverForm from "./components/driver-form";
+import DriverFormDialog from "@/app/components/DriverFormDialog";
 import DriverSearch from "./components/driver-search";
 import UnassignDriverButton from "./components/unassign-driver-button";
 
@@ -49,6 +49,9 @@ export default async function Home() {
             Name: true,
             Phone: true,
             Email: true,
+            LocationName: true,
+            Latitude: true,
+            Longitude: true,
         },
     });
 
@@ -59,19 +62,7 @@ export default async function Home() {
                 <span className="text-3xl font-medium">
                     Vehicle-Driver Mapping System
                 </span>
-                <Dialog>
-                    <DialogTrigger className="text-white bg-primary rounded-lg p-2 px-3">
-                        New Driver
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>
-                                Create New Driver Profile.
-                            </DialogTitle>
-                        </DialogHeader>
-                        <DriverForm />
-                    </DialogContent>
-                </Dialog>
+                <DriverFormDialog />
             </div>
             <div className="h-[80%] max-w-[70%] min-w-[70%] overflow-y-auto">
                 <Table>
