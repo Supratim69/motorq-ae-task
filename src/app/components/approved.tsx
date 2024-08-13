@@ -32,6 +32,14 @@ export default async function ApprovedAssignments({
         },
     });
 
+    if (approvedAssignments.length === 0) {
+        return (
+            <div className="h-[80vh] w-[30vw] flex items-center justify-center">
+                Nothing to see here
+            </div>
+        );
+    }
+
     return (
         <div className="h-[80vh] w-[30vw] overflow-y-auto">
             {approvedAssignments.map((assignment) => (

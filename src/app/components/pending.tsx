@@ -32,6 +32,15 @@ export default async function PendingRequests({
         },
     });
 
+    if (pendingRequests.length === 0) {
+        // Render the message when there are no pending requests
+        return (
+            <div className="h-[80vh] w-[30vw] flex items-center justify-center">
+                Nothing to see here
+            </div>
+        );
+    }
+
     return (
         <div className="h-[80vh] w-[30vw] overflow-y-auto">
             {pendingRequests.map((request) => (

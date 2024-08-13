@@ -55,6 +55,7 @@ model AssignmentRequest {
   Status           RequestStatus           @default(PENDING)
   CreatedAt        DateTime                @default(now())
   UpdatedAt        DateTime                @updatedAt
+  IsAccepted       Boolean                 @default(false)
   AcceptedRequests RequestAssignment[]
 }
 
