@@ -81,7 +81,7 @@ export default async function Home() {
                                     ? vehicle.Assignments[0].Status
                                     : null;
 
-                            let statusText = "Unassigned";
+                            let statusText = "Not assigned";
                             let buttonText = "Assign";
                             let buttonColor = "bg-green-500";
 

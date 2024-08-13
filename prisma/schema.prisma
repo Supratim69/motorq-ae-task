@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Driver {
-  DriverID     String                    @id @default(uuid())
-  Name         String
-  Email        String
-  Phone        String
-  LocationName String
-  Latitude     Float
-  Longitude    Float
-  Assignments  VehicleDriverAssignment[]
-  Requests     AssignmentRequest[]
+  DriverID         String                    @id @default(uuid())
+  Name             String
+  Email            String
+  Phone            String
+  LocationName     String
+  Latitude         Float
+  Longitude        Float
+  Assignments      VehicleDriverAssignment[]
+  Requests         AssignmentRequest[]
+  AcceptedRequests RequestAssignment[]
 }
 
 model Vehicle {
@@ -30,7 +31,7 @@ model Vehicle {
 
 model VehicleDriverAssignment {
   AssignmentID      String              @id @default(uuid())
-  Status            RequestStatus       @default(PENDING) // Use RequestStatus for assignment status
+  Status            RequestStatus       @default(PENDING)
   DriverID          String
   Driver            Driver              @relation(fields: [DriverID], references: [DriverID])
   VehicleID         String
@@ -44,20 +45,33 @@ model VehicleDriverAssignment {
 }
 
 model AssignmentRequest {
-  RequestID    String                  @id @default(uuid())
-  DriverID     String
-  Driver       Driver                  @relation(fields: [DriverID], references: [DriverID])
-  VehicleID    String
-  Vehicle      Vehicle                 @relation(fields: [VehicleID], references: [VehicleID])
-  AssignmentID String
-  Assignment   VehicleDriverAssignment @relation(fields: [AssignmentID], references: [AssignmentID])
-  Status       RequestStatus           @default(PENDING)
-  CreatedAt    DateTime                @default(now())
-  UpdatedAt    DateTime                @updatedAt
+  RequestID        String                  @id @default(uuid())
+  DriverID         String
+  Driver           Driver                  @relation(fields: [DriverID], references: [DriverID])
+  VehicleID        String
+  Vehicle          Vehicle                 @relation(fields: [VehicleID], references: [VehicleID])
+  AssignmentID     String
+  Assignment       VehicleDriverAssignment @relation(fields: [AssignmentID], references: [AssignmentID])
+  Status           RequestStatus           @default(PENDING)
+  CreatedAt        DateTime                @default(now())
+  UpdatedAt        DateTime                @updatedAt
+  AcceptedRequests RequestAssignment[]
+}
+
+model RequestAssignment {
+  RequestAssignmentID String            @id @default(uuid())
+  RequestID           String
+  AssignmentRequest   AssignmentRequest @relation(fields: [RequestID], references: [RequestID])
+  DriverID            String
+  Driver              Driver            @relation(fields: [DriverID], references: [DriverID])
+  AcceptedAt          DateTime          @default(now())
+
+  @@unique([RequestID, DriverID], name: "unique_request_driver")
 }
 
 enum RequestStatus {
   PENDING
   ACCEPTED
   REJECTED
+  INVALID
 }
